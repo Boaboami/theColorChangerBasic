@@ -1,0 +1,1583 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Color Changer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#5D5CDE',
+                }
+            }
+        }
+    }
+    </script>
+    <style>
+        /* Logo Styles */
+        .logo {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+        }
+        
+        .color-wheel {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                blue, 
+                #4b00ff, /* blue-violet */
+                #a400ff, /* violet */
+                #ff00aa, /* magenta */
+                red,
+                #ff6000, /* red-orange */
+                #ffa500, /* orange */
+                #ffd500, /* yellow-orange */
+                yellow,
+                #80ff00, /* yellow-green */
+                #00ff80, /* green */
+                #00ffff, /* cyan */
+                #00a0ff, /* light blue */
+                blue
+            );
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .white-center {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .cursor-icon {
+            width: 12px;
+            height: 12px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .cursor-hand {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            fill: #333;
+        }
+        
+        .color-dot-red {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #ff3366;
+            border-radius: 50%;
+            top: 28px;
+            left: 8px;
+        }
+        
+        .color-dot-blue {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #3399ff;
+            border-radius: 50%;
+            top: 16px;
+            left: 46px;
+        }
+        
+        .dark .white-center {
+            background: #2d3748;
+        }
+        
+        .dark .cursor-hand {
+            fill: #e2e8f0;
+            stroke: #e2e8f0;
+        }
+        
+        @media (max-width: 400px) {
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+            .color-wheel {
+                width: 100px;
+                height: 100px;
+            }
+            .white-center {
+                width: 35px;
+                height: 35px;
+                top: 32.5px;
+                left: 32.5px;
+            }
+            .cursor-icon {
+                width: 20px;
+                height: 20px;
+            }
+            .color-dot-red {
+                width: 7px;
+                height: 7px;
+                top: 47px;
+                left: 12px;
+            }
+            .color-dot-blue {
+                width: 7px;
+                height: 7px;
+                top: 27px;
+                left: 77px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 min-h-screen transition-colors duration-200">
+    <div class="w-full py-6">
+        <div class="flex justify-between items-center px-4">
+            <div class="flex items-center">
+                <div class="logo mr-4">
+                    <div class="color-wheel"></div>
+                    <div class="color-dot-red"></div>
+                    <div class="color-dot-blue"></div>
+                    <div class="white-center">
+                        <div class="cursor-icon">
+                            <svg class="cursor-hand" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M35,90 C25,90 20,85 20,75 L20,25 C20,20 22,15 30,15 C38,15 40,20 40,25 L40,50 L45,50 C45,45 47,40 55,40 C63,40 65,45 65,50 L70,50 C70,45 72,40 80,40 C88,40 90,45 90,50 L90,75 C90,85 85,90 75,90 L35,90 Z" stroke="#000" stroke-width="4"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">The Color Changer</h1>
+            </div>
+            <div></div> <!-- Empty div to maintain justify-between layout -->
+        </div>
+    </div>
+
+    <div class="container px-4 py-2 max-w-full">
+        
+        <div class="mb-6">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <div id="dropZone" class="w-full bg-white dark:bg-gray-800 rounded-3xl p-10 border-2 border-dashed border-gray-300 dark:border-gray-600 cursor-pointer hover:border-primary dark:hover:border-primary transition-colors duration-200 flex flex-col items-center justify-center">
+                        <div class="text-center">
+                            <button id="uploadButton" class="mb-6 px-12 py-4 bg-primary text-white text-lg font-medium rounded-full hover:bg-opacity-90 transition">
+                                Upload Image
+                            </button>
+                            <input type="file" id="upload" accept="image/*" class="hidden">
+                            <p class="text-gray-600 dark:text-gray-400 text-lg mb-2">or drop a file,</p>
+                            <p class="text-gray-600 dark:text-gray-400">paste image or <a href="#" id="urlUploadButton" class="text-primary underline">URL</a></p>
+                        </div>
+                    </div>
+                    <div id="urlInputContainer" class="mt-3 hidden">
+                        <div class="flex">
+                            <input type="text" id="imageUrlInput" placeholder="Enter image URL" class="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white">
+                            <button id="loadUrlButton" class="bg-primary text-white px-4 py-2 rounded-r-lg">Load</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1" id="colorPickerContainer" style="display:none">
+                    <div class="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                        <p class="mb-2 text-gray-700 dark:text-gray-300">Selected Area:</p>
+                        <div id="selectedAreaPreview" class="w-full h-10 mb-3 rounded border border-gray-300 dark:border-gray-600"></div>
+                        <label for="colorPicker" class="block mb-2 text-gray-700 dark:text-gray-300">Choose Color:</label>
+                        <input type="color" id="colorPicker" class="w-full h-10 cursor-pointer rounded border border-gray-300 dark:border-gray-600">
+                        <button id="applyColor" class="mt-3 w-full p-2 bg-primary text-white rounded hover:bg-opacity-90 transition">Apply Color</button>
+                        <div class="mt-2">
+                            <label for="toleranceSlider" class="block mb-1 text-sm text-gray-700 dark:text-gray-300">Color Tolerance: <span id="toleranceValue">30</span></label>
+                            <input type="range" id="toleranceSlider" min="0" max="100" value="30" class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer dark:bg-gray-600">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="relative mb-6 hidden" id="canvasContainer">
+            <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg flex justify-center">
+                <canvas id="imageCanvas" class="max-w-full rounded-lg shadow-md"></canvas>
+            </div>
+            <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 class="font-medium text-base text-gray-800 dark:text-white mb-3">Selection Instructions:</h3>
+                
+                <ul class="space-y-3 text-gray-600 dark:text-gray-300">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-primary mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+                        </svg>
+                        <span>Click on an area to select it for color changing.</span>
+                    </li>
+                    
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-primary mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <div>
+                            <span>Hold </span>
+                            <kbd class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600 font-mono text-sm">Shift</kbd>
+                            <span> while clicking to select multiple areas.</span>
+                        </div>
+                    </li>
+                    
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-primary mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                        </svg>
+                        <div>
+                            <span>Hold </span>
+                            <kbd class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600 font-mono text-sm">Shift</kbd>
+                            <span> + </span>
+                            <kbd class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600 font-mono text-sm">A</kbd>
+                            <span> and click to select all matching colors.</span>
+                        </div>
+                    </li>
+                    
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-primary mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <span>Press </span>
+                            <kbd class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600 font-mono text-sm">Esc</kbd>
+                            <span> to clear selection.</span>
+                        </div>
+                    </li>
+                </ul>
+                
+                <div id="currentModeIndicator" class="hidden mt-4 p-3 bg-primary bg-opacity-10 rounded-md text-primary font-medium border border-primary border-opacity-20 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Mode: Standard selection</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-8 hidden" id="actionButtons">
+            <div class="flex flex-wrap gap-3">
+                <button id="resetButton" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">Reset Changes</button>
+                <button id="undoButton" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Undo Last Change</button>
+                <button id="saveButton" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">Save High-Res Image</button>
+                <button id="clearSelection" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">Clear Selection</button>
+            </div>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">Click "Save High-Res Image" to save the full resolution version, or right-click on the canvas for a preview version.</p>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // DOM Elements
+        const uploadInput = document.getElementById('upload');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const colorPickerContainer = document.getElementById('colorPickerContainer');
+        const colorPicker = document.getElementById('colorPicker');
+        const applyColorBtn = document.getElementById('applyColor');
+        const selectedAreaPreview = document.getElementById('selectedAreaPreview');
+        const resetButton = document.getElementById('resetButton');
+        const undoButton = document.getElementById('undoButton');
+        const actionButtons = document.getElementById('actionButtons');
+        const toleranceSlider = document.getElementById('toleranceSlider');
+        const toleranceValue = document.getElementById('toleranceValue');
+        const clearSelectionBtn = document.getElementById('clearSelection');
+        const currentModeIndicator = document.getElementById('currentModeIndicator');
+
+        // Create hidden high-resolution canvas
+        const hiResCanvas = document.createElement('canvas');
+        hiResCanvas.style.display = 'none';
+        document.body.appendChild(hiResCanvas);
+        
+        // Canvas setup
+        const ctx = imageCanvas.getContext('2d');
+        const hiResCtx = hiResCanvas.getContext('2d');
+        let originalImage = null;
+        let currentImageData = null;
+        let hiResImageData = null;
+        let selectedPixels = [];
+        let history = [];
+        let hiResHistory = [];
+        let isProcessing = false;
+        let scaleRatio = 1; // Scale ratio between display and hi-res canvas
+
+        // Selection mode tracking
+        let isShiftPressed = false;
+        let isAPressed = false;
+        let isSelectAllMode = false;
+        let lastClickedPositions = []; // To store click positions for multiple selections
+        
+        // Keyboard event listeners for selection modes
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Shift' && !isShiftPressed) {
+                isShiftPressed = true;
+                updateSelectionModeDisplay();
+            }
+            if (e.key.toLowerCase() === 'a' && isShiftPressed && !isAPressed) {
+                isAPressed = true;
+                isSelectAllMode = true;
+                updateSelectionModeDisplay();
+            }
+            // ESC key to deselect all
+            if (e.key === 'Escape') {
+                clearSelection();
+            }
+        });
+        
+        document.addEventListener('keyup', function(e) {
+            if (e.key === 'Shift') {
+                isShiftPressed = false;
+                isSelectAllMode = false;
+                isAPressed = false;
+                updateSelectionModeDisplay();
+            }
+            if (e.key.toLowerCase() === 'a') {
+                isAPressed = false;
+                if (!isShiftPressed) isSelectAllMode = false;
+                updateSelectionModeDisplay();
+            }
+        });
+        
+        // Update the display showing current selection mode
+        function updateSelectionModeDisplay() {
+            if (isSelectAllMode) {
+                currentModeIndicator.textContent = 'Mode: Select all matching colors';
+                currentModeIndicator.classList.remove('hidden');
+            } else if (isShiftPressed) {
+                currentModeIndicator.textContent = 'Mode: Multi-select';
+                currentModeIndicator.classList.remove('hidden');
+            } else {
+                currentModeIndicator.classList.add('hidden');
+            }
+        }
+
+        // Advanced upload event listeners
+        const dropZone = document.getElementById('dropZone');
+        const uploadButton = document.getElementById('uploadButton');
+        const urlUploadButton = document.getElementById('urlUploadButton');
+        const urlInputContainer = document.getElementById('urlInputContainer');
+        const imageUrlInput = document.getElementById('imageUrlInput');
+        const loadUrlButton = document.getElementById('loadUrlButton');
+        
+        // Regular file upload via button
+        uploadInput.addEventListener('change', handleImageUpload);
+        uploadButton.addEventListener('click', () => {
+            uploadInput.click();
+        });
+        
+        // Drag and drop functionality
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-primary', 'bg-primary', 'bg-opacity-5');
+        });
+        
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-primary', 'bg-primary', 'bg-opacity-5');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-primary', 'bg-primary', 'bg-opacity-5');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                const file = e.dataTransfer.files[0];
+                if (file.type.match('image.*')) {
+                    handleDroppedFile(file);
+                } else {
+                    alert('Please drop an image file.');
+                }
+            }
+        });
+        
+        // Paste functionality (Ctrl+V / Cmd+V)
+        document.addEventListener('paste', (e) => {
+            if (e.clipboardData && e.clipboardData.items) {
+                // Look through clipboard items for an image
+                for (let i = 0; i < e.clipboardData.items.length; i++) {
+                    if (e.clipboardData.items[i].type.indexOf('image') !== -1) {
+                        const file = e.clipboardData.items[i].getAsFile();
+                        handleDroppedFile(file);
+                        break;
+                    }
+                }
+            }
+        });
+        
+        // URL input functionality
+        urlUploadButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            urlInputContainer.classList.toggle('hidden');
+            if (!urlInputContainer.classList.contains('hidden')) {
+                imageUrlInput.focus();
+            }
+        });
+        
+        loadUrlButton.addEventListener('click', () => {
+            const url = imageUrlInput.value.trim();
+            if (url) {
+                loadImageFromUrl(url);
+            }
+        });
+        
+        imageUrlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const url = imageUrlInput.value.trim();
+                if (url) {
+                    loadImageFromUrl(url);
+                }
+            }
+        });
+        
+        // Handler for dropped file
+        function handleDroppedFile(file) {
+            // Create a file list object to use with the existing handler
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            uploadInput.files = dataTransfer.files;
+            
+            // Trigger the change event manually
+            const event = new Event('change', { bubbles: true });
+            uploadInput.dispatchEvent(event);
+        }
+        
+        // Handler for loading image from URL
+        function loadImageFromUrl(url) {
+            // Show loading message
+            canvasContainer.classList.remove('hidden');
+            imageCanvas.style.opacity = '0.5';
+            
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center';
+            loadingMsg.id = 'loadingMessage';
+            loadingMsg.innerHTML = `
+                <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto mb-2"></div>
+                <p class="text-gray-700 dark:text-gray-300">Loading image from URL...</p>
+            `;
+            canvasContainer.appendChild(loadingMsg);
+            
+            const img = new Image();
+            img.crossOrigin = "anonymous"; // To handle CORS issues when possible
+            
+            img.onload = function() {
+                // Create temporary canvas to get image data as file
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(img, 0, 0);
+                
+                // Convert the canvas to a blob to create a File object
+                tempCanvas.toBlob((blob) => {
+                    const file = new File([blob], "image-from-url.png", { type: "image/png" });
+                    handleDroppedFile(file);
+                    
+                    // Hide URL input after successful load
+                    urlInputContainer.classList.add('hidden');
+                    imageUrlInput.value = '';
+                    
+                    // Remove loading message (handleDroppedFile will show its own)
+                    const loadingMsg = document.getElementById('loadingMessage');
+                    if (loadingMsg) loadingMsg.remove();
+                }, 'image/png');
+            };
+            
+            img.onerror = function() {
+                // Handle error loading image
+                const loadingMsg = document.getElementById('loadingMessage');
+                if (loadingMsg) {
+                    loadingMsg.innerHTML = `
+                        <div class="text-red-500 mb-2">
+                            <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300">Error loading image from URL.</p>
+                        <button id="closeError" class="mt-3 px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">Close</button>
+                    `;
+                    document.getElementById('closeError').addEventListener('click', () => {
+                        loadingMsg.remove();
+                        canvasContainer.classList.add('hidden');
+                    });
+                }
+            };
+            
+            img.src = url;
+        }
+        
+        // Other event listeners
+        imageCanvas.addEventListener('click', handleCanvasClick);
+        applyColorBtn.addEventListener('click', applySelectedColor);
+        resetButton.addEventListener('click', resetChanges);
+        undoButton.addEventListener('click', undoLastChange);
+        document.getElementById('saveButton').addEventListener('click', saveHighResImage);
+        clearSelectionBtn.addEventListener('click', clearSelection);
+        
+        // Clear the current selection
+        function clearSelection() {
+            selectedPixels = [];
+            lastClickedPositions = [];
+            colorPickerContainer.style.display = 'none';
+            // Restore the current image data to remove selection highlights
+            if (currentImageData) {
+                ctx.putImageData(currentImageData, 0, 0);
+            }
+        }
+        
+        // Real-time color preview as user changes the color
+        colorPicker.addEventListener('input', function() {
+            // If pixels are selected, update the canvas to preview the new color
+            if (selectedPixels.length > 0) {
+                highlightSelectedArea(this.value);
+            }
+        });
+        
+        toleranceSlider.addEventListener('input', function() {
+            toleranceValue.textContent = this.value;
+            if (selectedPixels.length > 0 && lastClickedPositions.length > 0) {
+                // Re-run selection with new tolerance for all selected positions
+                reapplySelectionWithNewTolerance();
+            }
+        });
+        
+        // Reapply selection with the new tolerance value
+        function reapplySelectionWithNewTolerance() {
+            // Clear current selection
+            selectedPixels = [];
+            
+            // Restore the current image
+            ctx.putImageData(currentImageData, 0, 0);
+            
+            // Process each clicked position with the new tolerance
+            for (const position of lastClickedPositions) {
+                if (isSelectAllMode) {
+                    selectAllSimilarColors(position.x, position.y, position.hiResX, position.hiResY, true);
+                } else {
+                    floodFill(position.x, position.y, position.hiResX, position.hiResY, true);
+                }
+            }
+            
+            // If any pixels were selected, highlight them and show color picker
+            if (selectedPixels.length > 0) {
+                highlightSelectedArea();
+                showColorPicker();
+            }
+        }
+
+        // Handle image upload
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file || !file.type.match('image.*')) return;
+            
+            // Show loading message
+            canvasContainer.classList.remove('hidden');
+            imageCanvas.style.opacity = '0.5';
+            
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center';
+            loadingMsg.id = 'loadingMessage';
+            loadingMsg.innerHTML = `
+                <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto mb-2"></div>
+                <p class="text-gray-700 dark:text-gray-300">Loading high-resolution image...</p>
+            `;
+            canvasContainer.appendChild(loadingMsg);
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Reset state
+                    history = [];
+                    hiResHistory = [];
+                    selectedPixels = [];
+                    lastClickedPositions = [];
+                    colorPickerContainer.style.display = 'none';
+                    
+                    // Set hi-res canvas to full image dimensions
+                    hiResCanvas.width = img.width;
+                    hiResCanvas.height = img.height;
+                    hiResCtx.drawImage(img, 0, 0);
+                    hiResImageData = hiResCtx.getImageData(0, 0, img.width, img.height);
+                    
+                    // Set display canvas dimensions based on image size
+                    const maxWidth = Math.min(window.innerWidth * 0.85, 800);
+                    const maxHeight = Math.min(window.innerHeight * 0.6, 600);
+                    
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Calculate scale ratio for mapping between canvases
+                    scaleRatio = 1;
+                    
+                    // Scale down if needed
+                    if (width > maxWidth) {
+                        scaleRatio = img.width / maxWidth;
+                        width = maxWidth;
+                        height = img.height / scaleRatio;
+                    }
+                    
+                    if (height > maxHeight) {
+                        const heightRatio = img.height / maxHeight;
+                        if (heightRatio > scaleRatio) {
+                            scaleRatio = heightRatio;
+                            height = maxHeight;
+                            width = img.width / scaleRatio;
+                        }
+                    }
+                    
+                    imageCanvas.width = width;
+                    imageCanvas.height = height;
+                    
+                    // Draw scaled image on display canvas
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Apply watermark to display canvas
+                    applyWatermark(ctx, width, height);
+                    
+                    // Store original display image
+                    originalImage = new Image();
+                    originalImage.src = imageCanvas.toDataURL();
+                    
+                    // Store current image data
+                    currentImageData = ctx.getImageData(0, 0, width, height);
+                    
+                    // Apply watermark to hi-res canvas as well
+                    applyWatermark(hiResCtx, hiResCanvas.width, hiResCanvas.height);
+                    hiResImageData = hiResCtx.getImageData(0, 0, hiResCanvas.width, hiResCanvas.height);
+                    
+                    // Show canvas and action buttons
+                    imageCanvas.style.opacity = '1';
+                    const loadingMsg = document.getElementById('loadingMessage');
+                    if (loadingMsg) loadingMsg.remove();
+                    
+                    actionButtons.classList.remove('hidden');
+                    
+                    // Add info about image dimensions
+                    const dimensionInfo = document.createElement('div');
+                    dimensionInfo.className = 'text-sm text-gray-600 dark:text-gray-400 mt-2';
+                    dimensionInfo.innerHTML = `Original image dimensions: ${img.width} × ${img.height} pixels`;
+                    canvasContainer.appendChild(dimensionInfo);
+                };
+                img.src = event.target.result;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        // Apply watermark to a canvas context
+        function applyWatermark(context, width, height) {
+            context.save();
+            
+            // Set watermark properties
+            context.font = Math.max(16, Math.floor(width / 20)) + 'px Arial';
+            context.fillStyle = 'rgba(255, 255, 255, 0.3)';  // White with 30% opacity
+            context.strokeStyle = 'rgba(0, 0, 0, 0.3)';      // Black stroke with 30% opacity
+            context.lineWidth = 0.5;
+            
+            // Calculate watermark grid spacing
+            const spacingX = Math.floor(width / 3);
+            const spacingY = Math.floor(height / 4);
+            const text = 'The Color Changer';
+            
+            // Create a diagonal pattern of watermarks
+            for (let y = spacingY / 2; y < height; y += spacingY) {
+                for (let x = -spacingX / 2; x < width + spacingX; x += spacingX) {
+                    // Offset every other row
+                    const offsetX = (Math.floor(y / spacingY) % 2) * (spacingX / 2);
+                    
+                    // Rotate the text for a diagonal effect
+                    context.translate(x + offsetX, y);
+                    context.rotate(-Math.PI / 6); // Rotate -30 degrees
+                    
+                    // Draw the watermark
+                    context.fillText(text, 0, 0);
+                    context.strokeText(text, 0, 0);
+                    
+                    // Reset transformation
+                    context.setTransform(1, 0, 0, 1, 0, 0);
+                }
+            }
+            
+            context.restore();
+        }
+
+        // Handle canvas click
+        function handleCanvasClick(e) {
+            if (isProcessing) return;
+            isProcessing = true;
+            
+            // Show loading for large images
+            let loadingMsg;
+            if (hiResCanvas.width * hiResCanvas.height > 4000000) { // About 4 megapixels
+                loadingMsg = document.createElement('div');
+                loadingMsg.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center';
+                loadingMsg.id = 'processingMessage';
+                loadingMsg.innerHTML = `
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p class="text-gray-700 dark:text-gray-300">Processing large image...</p>
+                `;
+                canvasContainer.appendChild(loadingMsg);
+            }
+            
+            const rect = imageCanvas.getBoundingClientRect();
+            const scaleX = imageCanvas.width / rect.width;
+            const scaleY = imageCanvas.height / rect.height;
+            
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
+            
+            // Convert display coordinates to hi-res coordinates
+            const hiResX = Math.floor(x * scaleRatio);
+            const hiResY = Math.floor(y * scaleRatio);
+            
+            // If Shift is not pressed, clear previous selection
+            if (!isShiftPressed) {
+                selectedPixels = [];
+                lastClickedPositions = [];
+                // Restore the current image (without selections)
+                ctx.putImageData(currentImageData, 0, 0);
+            }
+            
+            // Store this click position for potential reuse with tolerance changes
+            lastClickedPositions.push({ x, y, hiResX, hiResY });
+            
+            // Process selection in next tick to allow UI update
+            setTimeout(() => {
+                if (isSelectAllMode) {
+                    selectAllSimilarColors(x, y, hiResX, hiResY);
+                } else {
+                    floodFill(x, y, hiResX, hiResY);
+                }
+                
+                if (loadingMsg) loadingMsg.remove();
+                isProcessing = false;
+            }, 10);
+        }
+        
+        // Select all areas with a similar color to the clicked pixel
+        function selectAllSimilarColors(startX, startY, hiResStartX, hiResStartY, isReapply = false) {
+            // Get current hi-res image data
+            const hiResWidth = hiResCanvas.width;
+            const hiResHeight = hiResCanvas.height;
+            const hiResImageDataCopy = hiResCtx.getImageData(0, 0, hiResWidth, hiResHeight);
+            const hiResData = hiResImageDataCopy.data;
+            
+            // Display canvas dimensions
+            const width = imageCanvas.width;
+            const height = imageCanvas.height;
+            
+            // Get clicked pixel color from hi-res canvas for accuracy
+            const hiResStartIndex = (hiResStartY * hiResWidth + hiResStartX) * 4;
+            const startR = hiResData[hiResStartIndex];
+            const startG = hiResData[hiResStartIndex + 1];
+            const startB = hiResData[hiResStartIndex + 2];
+            
+            // Get current tolerance value
+            const tolerance = parseInt(toleranceSlider.value);
+            
+            // Create a set to track unique display pixel coordinates
+            const displayVisited = new Set();
+            const existingDisplayPixels = new Set(selectedPixels.map(p => `${p.x},${p.y}`));
+            
+            // Scan the entire hi-res canvas for similar colors
+            for (let hiResY = 0; hiResY < hiResHeight; hiResY++) {
+                for (let hiResX = 0; hiResX < hiResWidth; hiResX++) {
+                    const hiResIndex = (hiResY * hiResWidth + hiResX) * 4;
+                    
+                    const r = hiResData[hiResIndex];
+                    const g = hiResData[hiResIndex + 1];
+                    const b = hiResData[hiResIndex + 2];
+                    
+                    const colorDifference = Math.sqrt(
+                        (r - startR) * (r - startR) +
+                        (g - startG) * (g - startG) +
+                        (b - startB) * (b - startB)
+                    );
+                    
+                    if (colorDifference <= tolerance) {
+                        // Convert hi-res to display coordinates
+                        const displayX = Math.floor(hiResX / scaleRatio);
+                        const displayY = Math.floor(hiResY / scaleRatio);
+                        
+                        // Create a unique key for the display pixel
+                        const displayKey = `${displayX},${displayY}`;
+                        
+                        // Add to selected pixels if not already in the existing selection
+                        if (!displayVisited.has(displayKey) && !existingDisplayPixels.has(displayKey) &&
+                            displayX >= 0 && displayX < width && 
+                            displayY >= 0 && displayY < height) {
+                            
+                            displayVisited.add(displayKey);
+                            
+                            // Get display pixel color for the preview
+                            const displayData = ctx.getImageData(displayX, displayY, 1, 1).data;
+                            
+                            selectedPixels.push({ 
+                                x: displayX,
+                                y: displayY,
+                                hiResX,
+                                hiResY,
+                                r: displayData[0],
+                                g: displayData[1],
+                                b: displayData[2],
+                                a: displayData[3],
+                                hiResR: r,
+                                hiResG: g,
+                                hiResB: b
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Highlight selected area on display canvas
+            highlightSelectedArea();
+            
+            // Show color picker only if pixels are selected
+            if (selectedPixels.length > 0) {
+                showColorPicker();
+            }
+        }
+
+        // Flood fill algorithm to find connected areas - operating directly on hi-res data
+        function floodFill(startX, startY, hiResStartX, hiResStartY, isReapply = false) {
+            // Get current hi-res image data
+            const hiResWidth = hiResCanvas.width;
+            const hiResHeight = hiResCanvas.height;
+            const hiResImageDataCopy = hiResCtx.getImageData(0, 0, hiResWidth, hiResHeight);
+            const hiResData = hiResImageDataCopy.data;
+            
+            // Display canvas dimensions
+            const width = imageCanvas.width;
+            const height = imageCanvas.height;
+            
+            // Get clicked pixel color from hi-res canvas for accuracy
+            const hiResStartIndex = (hiResStartY * hiResWidth + hiResStartX) * 4;
+            const startR = hiResData[hiResStartIndex];
+            const startG = hiResData[hiResStartIndex + 1];
+            const startB = hiResData[hiResStartIndex + 2];
+            
+            // Get current tolerance value
+            const tolerance = parseInt(toleranceSlider.value);
+            
+            // Visited pixels for hi-res canvas
+            const hiResVisited = new Array(hiResWidth * hiResHeight).fill(false);
+            
+            // Track which display pixels correspond to selected hi-res pixels
+            const displayVisited = new Set();
+            const existingDisplayPixels = new Set(selectedPixels.map(p => `${p.x},${p.y}`));
+            
+            // Queue for BFS - operate on hi-res coordinates
+            const queue = [];
+            queue.push({ hiResX: hiResStartX, hiResY: hiResStartY });
+            hiResVisited[hiResStartY * hiResWidth + hiResStartX] = true;
+            
+            let newSelectedPixels = [];
+            
+            // BFS to find connected pixels with similar color in hi-res
+            while (queue.length > 0) {
+                const { hiResX, hiResY } = queue.shift();
+                const hiResIndex = (hiResY * hiResWidth + hiResX) * 4;
+                
+                // Check if the color is similar to the starting color
+                const r = hiResData[hiResIndex];
+                const g = hiResData[hiResIndex + 1];
+                const b = hiResData[hiResIndex + 2];
+                
+                const colorDifference = Math.sqrt(
+                    (r - startR) * (r - startR) +
+                    (g - startG) * (g - startG) +
+                    (b - startB) * (b - startB)
+                );
+                
+                if (colorDifference <= tolerance) {
+                    // Convert hi-res to display coordinates
+                    const displayX = Math.floor(hiResX / scaleRatio);
+                    const displayY = Math.floor(hiResY / scaleRatio);
+                    
+                    // Create a unique key for the display pixel
+                    const displayKey = `${displayX},${displayY}`;
+                    
+                    // Add to selected pixels if this display position hasn't been added yet
+                    if (!displayVisited.has(displayKey) && !existingDisplayPixels.has(displayKey) && 
+                        displayX >= 0 && displayX < width && 
+                        displayY >= 0 && displayY < height) {
+                        
+                        displayVisited.add(displayKey);
+                        
+                        // Get display pixel color for the preview
+                        const displayData = ctx.getImageData(displayX, displayY, 1, 1).data;
+                        
+                        newSelectedPixels.push({ 
+                            x: displayX,
+                            y: displayY,
+                            hiResX,
+                            hiResY,
+                            r: displayData[0],
+                            g: displayData[1],
+                            b: displayData[2],
+                            a: displayData[3],
+                            hiResR: r,
+                            hiResG: g,
+                            hiResB: b
+                        });
+                    }
+                    
+                    // Check neighbors - we work directly with hi-res neighbors
+                    const neighbors = [
+                        { dx: 1, dy: 0 },
+                        { dx: -1, dy: 0 },
+                        { dx: 0, dy: 1 },
+                        { dx: 0, dy: -1 }
+                    ];
+                    
+                    for (const neighbor of neighbors) {
+                        const hiResNX = hiResX + neighbor.dx;
+                        const hiResNY = hiResY + neighbor.dy;
+                        
+                        // Check if within hi-res canvas bounds and not visited
+                        if (hiResNX >= 0 && hiResNX < hiResWidth && 
+                            hiResNY >= 0 && hiResNY < hiResHeight && 
+                            !hiResVisited[hiResNY * hiResWidth + hiResNX]) {
+                            
+                            queue.push({ hiResX: hiResNX, hiResY: hiResNY });
+                            hiResVisited[hiResNY * hiResWidth + hiResNX] = true;
+                        }
+                    }
+                }
+            }
+            
+            // Add new selected pixels to the main selection array
+            selectedPixels = selectedPixels.concat(newSelectedPixels);
+            
+            // Highlight selected area on display canvas
+            highlightSelectedArea();
+            
+            // Show color picker only if pixels are selected
+            if (selectedPixels.length > 0) {
+                showColorPicker();
+            }
+        }
+
+        // Highlight selected area with current color from color picker
+        function highlightSelectedArea(previewColorHex = null) {
+            // Make a copy of current image data
+            const tempImageData = new ImageData(
+                new Uint8ClampedArray(currentImageData.data),
+                currentImageData.width,
+                currentImageData.height
+            );
+            
+            // Determine highlight color (red outline for selection or preview of the new color)
+            let highlightR = 255, highlightG = 0, highlightB = 0;
+            
+            // If preview color is provided, use it instead of red highlight
+            if (previewColorHex) {
+                const previewColor = hexToRgb(previewColorHex);
+                highlightR = previewColor.r;
+                highlightG = previewColor.g;
+                highlightB = previewColor.b;
+            }
+            
+            // Highlight or preview color on selected pixels
+            for (const pixel of selectedPixels) {
+                const index = (pixel.y * imageCanvas.width + pixel.x) * 4;
+                tempImageData.data[index] = highlightR;     // R
+                tempImageData.data[index + 1] = highlightG; // G
+                tempImageData.data[index + 2] = highlightB; // B
+            }
+            
+            // Draw highlighted/preview image
+            ctx.putImageData(tempImageData, 0, 0);
+            
+            // Only update the preview area if not in preview mode
+            if (!previewColorHex) {
+                updateSelectedAreaPreview();
+            }
+        }
+
+        // Show color picker
+        function showColorPicker() {
+            colorPickerContainer.style.display = 'block';
+        }
+
+        // Update selected area preview - use hi-res colors for accuracy
+        function updateSelectedAreaPreview() {
+            if (selectedPixels.length === 0) return;
+            
+            // Calculate average color from hi-res pixels for better accuracy
+            let totalR = 0, totalG = 0, totalB = 0;
+            let totalHiResPixels = 0;
+            
+            // Try to use hiResR, hiResG, hiResB if available for more accurate color
+            for (const pixel of selectedPixels) {
+                if (pixel.hiResR !== undefined) {
+                    totalR += pixel.hiResR;
+                    totalG += pixel.hiResG;
+                    totalB += pixel.hiResB;
+                    totalHiResPixels++;
+                } else {
+                    totalR += pixel.r;
+                    totalG += pixel.g;
+                    totalB += pixel.b;
+                }
+            }
+            
+            // Use hi-res colors if available, otherwise fall back to display colors
+            const divisor = totalHiResPixels > 0 ? totalHiResPixels : selectedPixels.length;
+            const avgR = Math.round(totalR / divisor);
+            const avgG = Math.round(totalG / divisor);
+            const avgB = Math.round(totalB / divisor);
+            
+            // Set color picker default
+            const hexColor = rgbToHex(avgR, avgG, avgB);
+            colorPicker.value = hexColor;
+            
+            // Update preview
+            selectedAreaPreview.style.backgroundColor = hexColor;
+            
+            // Add pixel count info 
+            const areaCount = document.createElement('div');
+            areaCount.className = 'text-xs text-gray-600 dark:text-gray-400 mt-1';
+            areaCount.innerHTML = `Selected approximately ${selectedPixels.length} display pixels representing ${totalHiResPixels > 0 ? 'over ' + totalHiResPixels : 'multiple'} high-resolution pixels`;
+            
+            // Remove any existing count info
+            const existingCount = document.querySelector('#selectedAreaCount');
+            if (existingCount) existingCount.remove();
+            
+            areaCount.id = 'selectedAreaCount';
+            selectedAreaPreview.parentNode.insertBefore(areaCount, selectedAreaPreview.nextSibling);
+        }
+
+        // Apply selected color
+        function applySelectedColor() {
+            if (selectedPixels.length === 0) return;
+            
+            // Show loading for large images
+            let loadingMsg;
+            if (hiResCanvas.width * hiResCanvas.height > 4000000) { // About 4 megapixels
+                loadingMsg = document.createElement('div');
+                loadingMsg.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center';
+                loadingMsg.id = 'applyingMessage';
+                loadingMsg.innerHTML = `
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p class="text-gray-700 dark:text-gray-300">Applying color to high-resolution image...</p>
+                `;
+                canvasContainer.appendChild(loadingMsg);
+            }
+            
+            // Process in next tick to allow UI update
+            setTimeout(() => {
+                // Save current state for undo
+                saveCurrentState();
+                
+                // Get selected color
+                const colorHex = colorPicker.value;
+                const rgb = hexToRgb(colorHex);
+                
+                // Copy current image data for display canvas
+                const newImageData = new ImageData(
+                    new Uint8ClampedArray(currentImageData.data),
+                    currentImageData.width,
+                    currentImageData.height
+                );
+                
+                // Copy current image data for hi-res canvas
+                const newHiResImageData = new ImageData(
+                    new Uint8ClampedArray(hiResImageData.data),
+                    hiResCanvas.width,
+                    hiResCanvas.height
+                );
+                
+                // Track which high-res pixels have been modified
+                const hiResModified = new Set();
+                
+                // Apply new color to selected pixels on display canvas
+                for (const pixel of selectedPixels) {
+                    // Update display canvas pixel
+                    const index = (pixel.y * imageCanvas.width + pixel.x) * 4;
+                    newImageData.data[index] = rgb.r;     // R
+                    newImageData.data[index + 1] = rgb.g; // G
+                    newImageData.data[index + 2] = rgb.b; // B
+                    
+                    // Calculate the region in hi-res canvas corresponding to this display pixel
+                    // Each display pixel might map to multiple hi-res pixels
+                    const startX = Math.floor(pixel.x * scaleRatio);
+                    const startY = Math.floor(pixel.y * scaleRatio);
+                    const endX = Math.floor((pixel.x + 1) * scaleRatio);
+                    const endY = Math.floor((pixel.y + 1) * scaleRatio);
+                    
+                    // Apply color to all hi-res pixels in this region
+                    for (let hiY = startY; hiY < endY; hiY++) {
+                        for (let hiX = startX; hiX < endX; hiX++) {
+                            // Skip if pixel is out of bounds
+                            if (hiX < 0 || hiX >= hiResCanvas.width || 
+                                hiY < 0 || hiY >= hiResCanvas.height) {
+                                continue;
+                            }
+                            
+                            // Create a unique key for this hi-res pixel
+                            const key = `${hiX},${hiY}`;
+                            
+                            // Skip if already modified
+                            if (hiResModified.has(key)) {
+                                continue;
+                            }
+                            
+                            // Mark as modified
+                            hiResModified.add(key);
+                            
+                            // Update hi-res pixel
+                            const hiResIndex = (hiY * hiResCanvas.width + hiX) * 4;
+                            newHiResImageData.data[hiResIndex] = rgb.r;     // R
+                            newHiResImageData.data[hiResIndex + 1] = rgb.g; // G
+                            newHiResImageData.data[hiResIndex + 2] = rgb.b; // B
+                        }
+                    }
+                }
+                
+                // Update current image data
+                currentImageData = newImageData;
+                hiResImageData = newHiResImageData;
+                
+                // Draw new image on display canvas
+                ctx.putImageData(currentImageData, 0, 0);
+                
+                // Draw new image on hi-res canvas
+                hiResCtx.putImageData(hiResImageData, 0, 0);
+                
+                // Clear selection
+                selectedPixels = [];
+                lastClickedPositions = [];
+                colorPickerContainer.style.display = 'none';
+                
+                if (loadingMsg) loadingMsg.remove();
+            }, 10);
+        }
+
+        // Save current state for undo
+        function saveCurrentState() {
+            // Save display canvas state
+            const imageData = new ImageData(
+                new Uint8ClampedArray(currentImageData.data),
+                currentImageData.width,
+                currentImageData.height
+            );
+            
+            // Save hi-res canvas state
+            const hiResImgData = new ImageData(
+                new Uint8ClampedArray(hiResImageData.data),
+                hiResCanvas.width,
+                hiResCanvas.height
+            );
+            
+            history.push(imageData);
+            hiResHistory.push(hiResImgData);
+            
+            // Limit history size
+            if (history.length > 10) {
+                history.shift();
+                hiResHistory.shift();
+            }
+        }
+
+        // Undo last change
+        function undoLastChange() {
+            if (history.length === 0) return;
+            
+            // Get previous states
+            currentImageData = history.pop();
+            
+            if (hiResHistory.length > 0) {
+                hiResImageData = hiResHistory.pop();
+                hiResCtx.putImageData(hiResImageData, 0, 0);
+            }
+            
+            // Draw previous state on display canvas
+            ctx.putImageData(currentImageData, 0, 0);
+            
+            // Clear selection
+            selectedPixels = [];
+            lastClickedPositions = [];
+            colorPickerContainer.style.display = 'none';
+        }
+
+        // Reset changes
+        function resetChanges() {
+            if (!originalImage) return;
+            
+            // Save current state for undo
+            saveCurrentState();
+            
+            // Reset display canvas
+            ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+            ctx.drawImage(originalImage, 0, 0, imageCanvas.width, imageCanvas.height);
+            currentImageData = ctx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+            
+            // Re-initialize hi-res canvas from original image
+            const img = new Image();
+            img.onload = function() {
+                hiResCtx.clearRect(0, 0, hiResCanvas.width, hiResCanvas.height);
+                hiResCtx.drawImage(img, 0, 0, hiResCanvas.width, hiResCanvas.height);
+                hiResImageData = hiResCtx.getImageData(0, 0, hiResCanvas.width, hiResCanvas.height);
+            };
+            img.src = originalImage.src;
+            
+            // Clear selection
+            selectedPixels = [];
+            lastClickedPositions = [];
+            colorPickerContainer.style.display = 'none';
+        }
+
+        // Helper function: RGB to HEX
+        function rgbToHex(r, g, b) {
+            return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+        }
+
+        // Helper function: HEX to RGB
+        function hexToRgb(hex) {
+            // Remove # if present
+            hex = hex.replace('#', '');
+            
+            // Parse hex values
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            
+            return { r, g, b };
+        }
+        
+        // Payment system variables
+        let hasPaid = false;
+        let paymentProcessing = false;
+        
+        // Get a hi-res image without watermark
+        function getCleanHighResImage() {
+            // Create a temporary canvas for the clean version
+            const cleanCanvas = document.createElement('canvas');
+            cleanCanvas.width = hiResCanvas.width;
+            cleanCanvas.height = hiResCanvas.height;
+            const cleanCtx = cleanCanvas.getContext('2d');
+            
+            // Draw the original image
+            const img = new Image();
+            img.onload = function() {
+                cleanCtx.drawImage(img, 0, 0, cleanCanvas.width, cleanCanvas.height);
+                
+                // Apply all edits from hiResImageData but without watermark
+                const hiResData = hiResImageData.data;
+                const cleanImageData = cleanCtx.getImageData(0, 0, cleanCanvas.width, cleanCanvas.height);
+                const cleanData = cleanImageData.data;
+                
+                for (let i = 0; i < cleanData.length; i += 4) {
+                    // Copy RGB (skip alpha)
+                    cleanData[i] = hiResData[i];        // R
+                    cleanData[i + 1] = hiResData[i + 1]; // G
+                    cleanData[i + 2] = hiResData[i + 2]; // B
+                }
+                
+                cleanCtx.putImageData(cleanImageData, 0, 0);
+                
+                // Now get data URL from clean canvas
+                const cleanDataUrl = cleanCanvas.toDataURL('image/png');
+                
+                // Create a temporary link
+                const link = document.createElement('a');
+                link.href = cleanDataUrl;
+                link.download = 'colorchanger_premium_' + new Date().getTime() + '.png';
+                link.click();
+            };
+            
+            // Load the original image (before watermarks)
+            img.src = originalImage.src;
+        }
+        
+        // Simulate payment processing
+        function processPayment(plan) {
+            if (paymentProcessing) return;
+            paymentProcessing = true;
+            
+            const paymentBtn = document.getElementById('paymentBtn' + plan);
+            const originalText = paymentBtn.textContent;
+            paymentBtn.textContent = "Processing...";
+            paymentBtn.disabled = true;
+            
+            // Simulate payment processing
+            setTimeout(() => {
+                paymentProcessing = false;
+                hasPaid = true;
+                
+                // Close payment modal and continue to download
+                document.getElementById('paymentModal').remove();
+                
+                // Download without watermark
+                getCleanHighResImage();
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center z-50';
+                successMsg.innerHTML = `
+                    <div class="text-green-500 mb-2">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Payment Successful!</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-3">Your premium image is being downloaded.</p>
+                    <button id="closeSuccess" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition">Close</button>
+                `;
+                document.body.appendChild(successMsg);
+                
+                document.getElementById('closeSuccess').addEventListener('click', () => {
+                    successMsg.remove();
+                });
+            }, 1500);
+        }
+        
+        // Show payment options modal
+        function showPaymentModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+            modal.id = 'paymentModal';
+            
+            // Payment options
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-lg w-full flex flex-col space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">Remove Watermark</h3>
+                        <button id="closePaymentModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="border-t dark:border-gray-700 pt-4">
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Premium users can save high-resolution images without watermarks. Choose a plan:
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <!-- Single payment option -->
+                            <div class="border rounded-lg p-4 dark:border-gray-700 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-bold text-gray-800 dark:text-white">Single Download</h4>
+                                    <span class="font-bold text-lg text-primary">$5</span>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                    One-time payment for this image only.
+                                </p>
+                                <button id="paymentBtnSingle" class="w-full p-2 bg-primary text-white rounded hover:bg-opacity-90 transition">
+                                    Pay with Credit Card
+                                </button>
+                                <div class="flex justify-center mt-2">
+                                    <button id="usdcBtnSingle" class="text-sm text-gray-600 dark:text-gray-400 underline">Pay with USDC</button>
+                                    <span class="mx-2 text-gray-400">|</span>
+                                    <button id="appleBtnSingle" class="text-sm text-gray-600 dark:text-gray-400 underline">Apple Pay</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Subscription option -->
+                            <div class="border rounded-lg p-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div>
+                                        <h4 class="font-bold text-gray-800 dark:text-white">Monthly Subscription</h4>
+                                        <span class="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded">Best Value</span>
+                                    </div>
+                                    <span class="font-bold text-lg text-primary">$20</span>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                    Unlimited downloads for a month. Cancel anytime.
+                                </p>
+                                <button id="paymentBtnSub" class="w-full p-2 bg-primary text-white rounded hover:bg-opacity-90 transition">
+                                    Subscribe with Credit Card
+                                </button>
+                                <div class="flex justify-center mt-2">
+                                    <button id="usdcBtnSub" class="text-sm text-gray-600 dark:text-gray-400 underline">Pay with USDC</button>
+                                    <span class="mx-2 text-gray-400">|</span>
+                                    <button id="appleBtnSub" class="text-sm text-gray-600 dark:text-gray-400 underline">Apple Pay</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t dark:border-gray-700 pt-4 text-xs text-gray-500 dark:text-gray-400 text-center">
+                        Secure payment processing. Your personal information is never stored.
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add event listeners
+            document.getElementById('closePaymentModal').addEventListener('click', () => {
+                document.getElementById('paymentModal').remove();
+            });
+            
+            // Payment buttons
+            document.getElementById('paymentBtnSingle').addEventListener('click', () => {
+                processPayment('Single');
+            });
+            
+            document.getElementById('paymentBtnSub').addEventListener('click', () => {
+                processPayment('Sub');
+            });
+            
+            // Alternative payment methods
+            document.getElementById('usdcBtnSingle').addEventListener('click', () => {
+                processPayment('Single');
+            });
+            
+            document.getElementById('usdcBtnSub').addEventListener('click', () => {
+                processPayment('Sub');
+            });
+            
+            document.getElementById('appleBtnSingle').addEventListener('click', () => {
+                processPayment('Single');
+            });
+            
+            document.getElementById('appleBtnSub').addEventListener('click', () => {
+                processPayment('Sub');
+            });
+        }
+        
+        // Save high resolution image
+        function saveHighResImage() {
+            if (!hiResCanvas || !hiResImageData) return;
+            
+            // If user has paid, provide the clean version
+            if (hasPaid) {
+                getCleanHighResImage();
+                return;
+            }
+            
+            // Show loading message for large images
+            let loadingMsg;
+            if (hiResCanvas.width * hiResCanvas.height > 8000000) { // About 8 megapixels
+                loadingMsg = document.createElement('div');
+                loadingMsg.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center z-50';
+                loadingMsg.id = 'savingMessage';
+                loadingMsg.innerHTML = `
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p class="text-gray-700 dark:text-gray-300">Preparing high-resolution image...</p>
+                `;
+                document.body.appendChild(loadingMsg);
+            }
+            
+            // Process in next tick to allow UI to update
+            setTimeout(() => {
+                try {
+                    // Get full resolution image as data URL
+                    const hiResDataUrl = hiResCanvas.toDataURL('image/png');
+                    
+                    // Create a temporary link element
+                    const link = document.createElement('a');
+                    link.href = hiResDataUrl;
+                    
+                    // Set download attribute with filename
+                    const filename = 'edited_image_' + new Date().getTime() + '.png';
+                    link.download = filename;
+                    
+                    // Create preview modal
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-40';
+                    modal.id = 'previewModal';
+                    
+                    // Create modal content
+                    modal.innerHTML = `
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg max-w-[90%] max-h-[90%] flex flex-col">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-white">High-Resolution Image Preview</h3>
+                                <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="overflow-auto flex-1">
+                                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    Image dimensions: ${hiResCanvas.width} × ${hiResCanvas.height} pixels
+                                </div>
+                                <img src="${hiResDataUrl}" class="max-w-full max-h-[60vh] object-contain mx-auto border border-gray-300 dark:border-gray-600 rounded" />
+                                <div class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900 rounded text-sm text-yellow-800 dark:text-yellow-200">
+                                    <strong>Note:</strong> The watermark can be removed with a premium plan.
+                                </div>
+                            </div>
+                            <div class="mt-4 flex flex-wrap justify-center gap-3">
+                                <button id="downloadBtn" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                                    Download With Watermark
+                                </button>
+                                <button id="premiumBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition">
+                                    Remove Watermark
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    // Add event listeners
+                    document.getElementById('closeModal').addEventListener('click', () => {
+                        document.getElementById('previewModal').remove();
+                    });
+                    
+                    document.getElementById('downloadBtn').addEventListener('click', () => {
+                        link.click();
+                    });
+                    
+                    document.getElementById('premiumBtn').addEventListener('click', () => {
+                        document.getElementById('previewModal').remove();
+                        showPaymentModal();
+                    });
+                    
+                    // Remove loading message if it exists
+                    if (loadingMsg) loadingMsg.remove();
+                    
+                } catch (error) {
+                    console.error("Error saving high-resolution image:", error);
+                    if (loadingMsg) loadingMsg.remove();
+                    
+                    // Show error message
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center z-50';
+                    errorMsg.innerHTML = `
+                        <div class="text-red-500 mb-2">
+                            <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300">Error saving image. The image might be too large.</p>
+                        <button id="closeError" class="mt-3 px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">Close</button>
+                    `;
+                    document.body.appendChild(errorMsg);
+                    
+                    document.getElementById('closeError').addEventListener('click', () => {
+                        errorMsg.remove();
+                    });
+                }
+            }, 100);
+        }
+    </script>
+
+
+
+</body></html>
